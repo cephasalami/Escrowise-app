@@ -26,6 +26,7 @@ export default function AdminProfilesPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const checkAuth = async () => {
