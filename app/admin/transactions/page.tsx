@@ -11,12 +11,6 @@ const ADMIN_EMAILS = [
   // Add more emails as needed
 ];
 
-export const metadata: Metadata = {
-  title: "Transaction Management - Admin Dashboard",
-  description: "Manage all transactions on the escrow platform",
-}
-
-"use client";
 export default function TransactionsPage() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
