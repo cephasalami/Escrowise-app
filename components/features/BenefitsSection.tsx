@@ -1,5 +1,5 @@
 import type React from "react"
-import { CheckCircleIcon, LightBulbIcon, ShieldCheckIcon } from "@heroicons/react/solid"
+import { CheckCircleIcon, LightBulbIcon, ShieldCheckIcon } from "@heroicons/react/24/solid"
 
 interface BenefitCardProps {
   icon: React.ReactNode
