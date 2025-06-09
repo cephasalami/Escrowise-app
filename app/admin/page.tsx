@@ -18,7 +18,6 @@ export const metadata: Metadata = {
   description: "Admin dashboard for the Escrowise platform",
 }
 
-"use client";
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);

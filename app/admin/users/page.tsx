@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: "Manage all users of the escrow platform",
 }
 
-"use client";
 export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
