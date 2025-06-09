@@ -13,10 +13,7 @@ const ADMIN_EMAILS = [
   // Add more emails as needed
 ];
 
-export const metadata: Metadata = {
-  title: "Admin Dashboard - Escrowise",
-  description: "Admin dashboard for the Escrowise platform",
-}
+
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);

@@ -11,10 +11,7 @@ const ADMIN_EMAILS = [
   // Add more emails as needed
 ];
 
-export const metadata: Metadata = {
-  title: "User Management - Admin Dashboard",
-  description: "Manage all users of the escrow platform",
-}
+
 
 export default function UsersPage() {
   const [loading, setLoading] = useState(true);
