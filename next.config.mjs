@@ -7,10 +7,6 @@ const nextConfig = {
     optimizeCss: true,
     scrollRestoration: true,
   },
-  // Enable SWC minification for faster builds
-  swcMinify: true,
-  // Optimize fonts
-  optimizeFonts: true,
   // Improve page loading performance
   reactStrictMode: true,
   // Compress images
