@@ -2,7 +2,21 @@
 import Header from "@/components/dashboard/Header"
 import TransactionForm from "./TransactionForm"
 
+import { useState } from "react";
+
 function StartTransaction() {
+  const [transaction, setTransaction] = useState({
+    name: "",
+    category: "",
+    price: "",
+    description: "",
+    inspectionPeriod: ""
+  });
+
+  const handleTransactionChange = (field: string, value: string) => {
+    setTransaction(prev => ({ ...prev, [field]: value }));
+  };
+
   return (
     <main className="flex flex-col bg-zinc-100 min-h-screen">
       <Header />
@@ -10,11 +24,11 @@ function StartTransaction() {
         <h1 className="mb-6 sm:mb-8 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter text-black">
           Start Transaction
         </h1>
-        <TransactionForm />
+        <TransactionForm transaction={transaction} onTransactionChange={handleTransactionChange} />
       </section>
     </main>
-  )
+  );
 }
 
-export default StartTransaction
+export default StartTransaction;
 

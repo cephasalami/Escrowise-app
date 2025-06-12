@@ -11,7 +11,9 @@ const stateLabels = {
   dispute: "Dispute"
 };
 
-const ProgressIndicator = ({ currentState, states }) => {
+const ProgressIndicator = (
+  { currentState, states }: { currentState: string; states: string[] }
+) => {
   const currentIdx = states.indexOf(currentState);
 
   return (
@@ -35,7 +37,7 @@ const ProgressIndicator = ({ currentState, states }) => {
             }`}
             style={{ width: 80 }}
           >
-            {stateLabels[state]}
+            {stateLabels[state as keyof typeof stateLabels]}
           </span>
           {idx < states.length - 1 && (
             <div

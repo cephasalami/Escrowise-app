@@ -15,27 +15,42 @@ interface Item {
   category: string
 }
 
-function TransactionForm() {
+interface TransactionFormProps {
+  transaction: {
+    name: string;
+    category: string;
+    price: string;
+    description: string;
+    inspectionPeriod: string;
+  };
+  onTransactionChange: (field: string, value: string) => void;
+}
+
+function TransactionForm({ transaction, onTransactionChange }: TransactionFormProps) {
   const [formData, setFormData] = useState({
     title: "",
     role: "Buyer",
     currency: "USD",
-    inspectionPeriod: "",
     haveBuyer: false,
     agreeTerms: false,
-  })
+  }); // inspectionPeriod removed from internal state
 
-  const [items, setItems] = useState<Item[]>([])
+  const [items, setItems] = useState<Item[]>([]);
+
+  // Handles changes for transaction fields controlled by parent
+  const handleTransactionFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    onTransactionChange(name, value);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target
-    const isCheckbox = type === "checkbox"
-
+    const { name, value, type } = e.target;
+    const isCheckbox = type === "checkbox";
     setFormData((prev) => ({
       ...prev,
       [name]: isCheckbox ? (e.target as HTMLInputElement).checked : value,
-    }))
-  }
+    }));
+  };
 
   const handleAddItem = (item: Item) => {
     setItems((prev) => [...prev, item])
@@ -80,6 +95,84 @@ function TransactionForm() {
       variants={formVariants}
     >
       <motion.div className="w-full bg-white p-6 sm:p-8 rounded-xl shadow-sm" variants={itemVariants}>
+  <div className="mb-6 sm:mb-8">
+    <label htmlFor="name" className="mb-2 text-base sm:text-lg font-medium tracking-tighter text-black block">
+      Item Name
+    </label>
+    <input
+      id="name"
+      name="name"
+      type="text"
+      value={transaction.name}
+      onChange={handleTransactionFieldChange}
+      placeholder="Enter item name"
+      className="px-4 sm:px-6 py-3 sm:py-4 w-full rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+      required
+    />
+  </div>
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+    <div>
+      <label htmlFor="category" className="mb-2 text-base sm:text-lg font-medium tracking-tighter text-black block">
+        Category
+      </label>
+      <input
+        id="category"
+        name="category"
+        type="text"
+        value={transaction.category}
+        onChange={handleTransactionFieldChange}
+        placeholder="Enter category"
+        className="px-4 sm:px-6 py-3 sm:py-4 w-full rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+        required
+      />
+    </div>
+    <div>
+      <label htmlFor="price" className="mb-2 text-base sm:text-lg font-medium tracking-tighter text-black block">
+        Price
+      </label>
+      <input
+        id="price"
+        name="price"
+        type="number"
+        value={transaction.price}
+        onChange={handleTransactionFieldChange}
+        placeholder="Enter price"
+        className="px-4 sm:px-6 py-3 sm:py-4 w-full rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+        required
+      />
+    </div>
+    <div>
+      <label htmlFor="inspectionPeriod" className="mb-2 text-base sm:text-lg font-medium tracking-tighter text-black block">
+        Inspection Period (Days)
+      </label>
+      <input
+        id="inspectionPeriod"
+        name="inspectionPeriod"
+        type="number"
+        min="1"
+        max="30"
+        value={transaction.inspectionPeriod}
+        onChange={handleTransactionFieldChange}
+        placeholder="e.g., 7"
+        className="px-4 sm:px-6 py-3 sm:py-4 w-full rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+        required
+      />
+    </div>
+  </div>
+  <div className="mb-6 sm:mb-8">
+    <label htmlFor="description" className="mb-2 text-base sm:text-lg font-medium tracking-tighter text-black block">
+      Description
+    </label>
+    <textarea
+      id="description"
+      name="description"
+      value={transaction.description}
+      onChange={handleTransactionFieldChange}
+      placeholder="Enter item description"
+      className="px-4 sm:px-6 py-3 sm:py-4 w-full rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+      required
+    />
+  </div>
         <div className="mb-6 sm:mb-8">
           <label htmlFor="title" className="mb-2 text-base sm:text-lg font-medium tracking-tighter text-black block">
             Transaction Title
@@ -150,8 +243,8 @@ function TransactionForm() {
               type="number"
               min="1"
               max="30"
-              value={formData.inspectionPeriod}
-              onChange={handleChange}
+              value={transaction.inspectionPeriod}
+              onChange={handleTransactionFieldChange}
               placeholder="e.g., 7"
               className="px-4 sm:px-6 py-3 sm:py-4 w-full rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
             />
@@ -185,7 +278,7 @@ function TransactionForm() {
                     category={item.category}
                     price={item.price}
                     description={item.description}
-                    inspectionPeriod={formData.inspectionPeriod}
+                    inspectionPeriod={transaction.inspectionPeriod}
                   />
                 </motion.div>
               ))}
