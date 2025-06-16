@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { TrendingUp, Users, ShieldAlert, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { AnimatedCounter } from "@/components/animations/AnimatedCounter"
 
 interface StatCardProps {
@@ -20,11 +20,11 @@ interface StatCardProps {
 const StatCard = ({ title, value, icon, trend, className }: StatCardProps) => {
   return (
     <Card className={className}>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-gray-500">{title}</CardTitle>
-        <div className="bg-gray-100 p-2 rounded-md">{icon}</div>
-      </CardHeader>
-      <CardContent>
+      <div className="flex flex-col space-y-4 p-4">
+        <div className="flex flex-row items-center justify-between">
+          <div className="text-sm font-medium text-gray-500">{title}</div>
+          <div className="bg-gray-100 p-2 rounded-md">{icon}</div>
+        </div>
         <div className="text-2xl font-bold">{value}</div>
         {trend && (
           <div className="flex items-center mt-1">
