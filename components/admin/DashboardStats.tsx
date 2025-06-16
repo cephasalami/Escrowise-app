@@ -39,7 +39,7 @@ const StatCard = ({ title, value, icon, trend, className }: StatCardProps) => {
             <span className="text-xs text-gray-500 ml-1">vs. last month</span>
           </div>
         )}
-      </CardContent>
+      </div>
     </Card>
   )
 }
