@@ -8,6 +8,8 @@ interface TransactionDetailsCardProps {
     currency: string;
     description: string;
     photos?: string[];
+    status: string;
+    inspection_period: number;
   } | null;
   buyer?: any;
   seller?: any;
