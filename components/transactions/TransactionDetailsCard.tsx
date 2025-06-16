@@ -1,6 +1,19 @@
 import React from "react";
 
-const TransactionDetailsCard = ({ transaction, buyer, seller }) => {
+interface TransactionDetailsCardProps {
+  transaction: {
+    item_title: string;
+    category: string;
+    price: number;
+    currency: string;
+    description: string;
+    photos?: string[];
+  } | null;
+  buyer?: any;
+  seller?: any;
+}
+
+const TransactionDetailsCard = ({ transaction, buyer, seller }: TransactionDetailsCardProps) => {
   if (!transaction) return null;
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
