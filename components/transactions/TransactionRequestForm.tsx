@@ -37,9 +37,40 @@ const defaultState = {
   draft: false
 };
 
-import ImageAnnotator from "./ImageAnnotator";
+interface TransactionRequestFormProps {
+  sellerId: string;
+}
 
-const TransactionRequestForm = ({ sellerId }) => {
+interface TransactionFormData {
+  item_title: string;
+  category: string;
+  description: string;
+  photos: string[];
+  price: string;
+  currency: string;
+  price_justification: string;
+  delivery_method: string;
+  shipping_details: string;
+  inspection_period: number;
+  payment_deadline: string;
+  return_policy: string;
+  warranty: string;
+  special_terms: string;
+  buyer_email: string;
+  buyer_name: string;
+  buyer_phone: string;
+  require_verification: boolean;
+  min_buyer_rating: number;
+  allow_direct_comm: boolean;
+  comm_guidelines: string;
+  fee_payer: string;
+  insurance: string;
+  dispute_resolution: string;
+  protection_services: string;
+  draft: boolean;
+}
+
+const TransactionRequestForm = ({ sellerId }: TransactionRequestFormProps) => {
   const [step, setStep] = useState(1);
 const [form, setForm] = useState(defaultState);
 const [saving, setSaving] = useState(false);
