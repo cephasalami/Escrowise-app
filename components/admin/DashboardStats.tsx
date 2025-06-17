@@ -15,6 +15,7 @@ interface StatCardProps {
     isPositive: boolean
   }
   className?: string
+  children?: React.ReactNode // Allow children prop for Card compatibility
 }
 
 const StatCard = ({ title, value, icon, trend, className }: StatCardProps) => {
