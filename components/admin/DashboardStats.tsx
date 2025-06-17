@@ -18,7 +18,7 @@ interface StatCardProps {
   children?: React.ReactNode // Allow children prop for Card compatibility
 }
 
-const StatCard = ({ title, value, icon, trend, className }: StatCardProps) => {
+const StatCard = ({ title, value, icon, trend, className, children }: StatCardProps) => {
   return (
     <Card className={className}>
       <CardHeader>
@@ -40,6 +40,7 @@ const StatCard = ({ title, value, icon, trend, className }: StatCardProps) => {
             <span className="text-xs text-gray-500 ml-1">vs. last month</span>
           </div>
         )}
+        {children}
       </CardHeader>
     </Card>
   )
