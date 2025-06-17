@@ -1,6 +1,5 @@
 "use client"
-import type React from "react"
-import { useState } from "react"
+import React, { useState } from "react"
 import TransactionDetails from "./TransactionDetails"
 import TransactionSummary from "./TransactionSummary"
 import BuyerDetails from "./BuyerDetails"
@@ -15,6 +14,14 @@ interface Item {
   category: string
 }
 
+interface TransactionFormState {
+  title: string
+  role: "Buyer" | "Seller"
+  currency: string
+  haveBuyer: boolean
+  agreeTerms: boolean
+}
+
 interface TransactionFormProps {
   transaction: {
     name: string;
@@ -23,30 +30,30 @@ interface TransactionFormProps {
     description: string;
     inspectionPeriod: string;
   };
-  onTransactionChange: (field: string, value: string) => void;
+  onTransactionChange: (field: keyof TransactionFormProps['transaction'], value: string) => void;
 }
 
 function TransactionForm({ transaction, onTransactionChange }: TransactionFormProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<TransactionFormState>({
     title: "",
     role: "Buyer",
     currency: "USD",
     haveBuyer: false,
     agreeTerms: false,
-  }); // inspectionPeriod removed from internal state
+  });
 
   const [items, setItems] = useState<Item[]>([]);
 
   // Handles changes for transaction fields controlled by parent
   const handleTransactionFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    onTransactionChange(name, value);
+    onTransactionChange(name as keyof TransactionFormProps['transaction'], value);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const isCheckbox = type === "checkbox";
-    setFormData((prev) => ({
+    setFormData((prev: TransactionFormState) => ({
       ...prev,
       [name]: isCheckbox ? (e.target as HTMLInputElement).checked : value,
     }));

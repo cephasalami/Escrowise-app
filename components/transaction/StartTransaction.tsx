@@ -1,11 +1,23 @@
 "use client"
+import React, { useState } from "react"
 import Header from "@/components/dashboard/Header"
 import TransactionForm from "./TransactionForm"
 
-import { useState } from "react";
+interface TransactionFormState {
+  name: string;
+  category: string;
+  price: string;
+  description: string;
+  inspectionPeriod: string;
+}
 
-function StartTransaction() {
-  const [transaction, setTransaction] = useState({
+interface TransactionFormProps {
+  transaction: TransactionFormState;
+  onTransactionChange: (field: keyof TransactionFormState, value: string) => void;
+}
+
+export default function StartTransaction() {
+  const [transaction, setTransaction] = useState<TransactionFormState>({
     name: "",
     category: "",
     price: "",
@@ -13,7 +25,7 @@ function StartTransaction() {
     inspectionPeriod: ""
   });
 
-  const handleTransactionChange = (field: string, value: string) => {
+  const handleTransactionChange = (field: keyof TransactionFormState, value: string) => {
     setTransaction(prev => ({ ...prev, [field]: value }));
   };
 
@@ -29,6 +41,4 @@ function StartTransaction() {
     </main>
   );
 }
-
-export default StartTransaction;
 

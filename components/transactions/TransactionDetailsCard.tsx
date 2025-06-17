@@ -1,5 +1,11 @@
 import React from "react";
 
+interface UserParty {
+  first_name: string;
+  last_name: string;
+  // Add more fields as needed
+}
+
 interface TransactionDetailsCardProps {
   transaction: {
     item_title: string;
@@ -11,8 +17,8 @@ interface TransactionDetailsCardProps {
     status: string;
     inspection_period: number;
   } | null;
-  buyer?: any;
-  seller?: any;
+  buyer?: UserParty;
+  seller?: UserParty;
 }
 
 const TransactionDetailsCard = ({ transaction, buyer, seller }: TransactionDetailsCardProps) => {
