@@ -1,5 +1,6 @@
 import type React from "react"
 import { Play } from "lucide-react"
+import Link from "next/link"
 import { FadeIn } from "./animations/FadeIn"
 
 const HeroSection: React.FC = () => {
@@ -28,9 +29,9 @@ const HeroSection: React.FC = () => {
             </FadeIn>
             <div className="flex flex-row items-center gap-6 sm:gap-10 pt-4 sm:pt-6">
               <FadeIn direction="up" delay={400} duration={800}>
-                <button className="px-6 sm:px-10 py-3 sm:py-4 text-base font-semibold text-white bg-orange-400 hover:bg-orange-500 transition-all duration-300 hover:scale-105 hover:shadow-lg rounded-md shadow-sm">
+                <Link href="/signup" className="px-6 sm:px-10 py-3 sm:py-4 text-base font-semibold text-white bg-orange-400 hover:bg-orange-500 transition-all duration-300 hover:scale-105 hover:shadow-lg rounded-md shadow-sm">
                   Get Started
-                </button>
+                </Link>
               </FadeIn>
               <FadeIn direction="up" delay={600} duration={800}>
                 <button className="flex items-center gap-3 text-base sm:text-lg text-gray-800 hover:text-black group transition-colors duration-300">

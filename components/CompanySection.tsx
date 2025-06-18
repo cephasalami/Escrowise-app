@@ -1,4 +1,5 @@
 import type React from "react"
+import Link from "next/link"
 
 const CompanySection: React.FC = () => {
   return (
@@ -19,9 +20,9 @@ const CompanySection: React.FC = () => {
               integrity of every transaction handled through Escrowise.
             </p>
             <div className="pt-4 sm:pt-6">
-              <button className="px-6 sm:px-8 py-3 sm:py-4 text-base font-bold tracking-tighter text-white bg-orange-400 hover:bg-orange-500 transition-colors rounded-md shadow-sm">
+              <Link href="/signup" className="px-6 sm:px-8 py-3 sm:py-4 text-base font-bold tracking-tighter text-white bg-orange-400 hover:bg-orange-500 transition-colors rounded-md shadow-sm">
                 Get Started
-              </button>
+              </Link>
             </div>
           </div>
         </div>

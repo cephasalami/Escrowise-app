@@ -7,6 +7,7 @@ export const signUp = async (email: string, password: string, firstName: string,
     email,
     password,
     options: {
+      emailRedirectTo: `${location.origin}/login`,
       data: {
         first_name: firstName,
         last_name: lastName,
