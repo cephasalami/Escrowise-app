@@ -22,7 +22,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { X } from "lucide-react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 
-import type { NextImageProps } from "next/image";
+import type { ImageProps } from "next/image";
 import type { HTMLAttributes } from "react";
 
 type TransactionFormData = Database['public']['Tables']['transactions']['Row'];
@@ -75,6 +75,7 @@ export function TransactionRequestForm({ sellerId }: TransactionRequestFormProps
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("item-details");
   const [showPhotos, setShowPhotos] = useState(false);
+  const [annotateIdx, setAnnotateIdx] = useState<number | null>(null);
 
   useEffect(() => {
     if (!form.draft) return;
@@ -82,11 +83,15 @@ export function TransactionRequestForm({ sellerId }: TransactionRequestFormProps
     return () => clearInterval(interval);
   }, [form]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value, type } = e.target;
     setForm(prev => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value
+      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value
     }));
   }; // Make sure all input fields have the correct 'name' attribute
 
@@ -106,14 +111,14 @@ export function TransactionRequestForm({ sellerId }: TransactionRequestFormProps
     }
     setForm(prev => ({
       ...prev,
-      item_photos: [...(prev.item_photos || []), ...uploaded]
+      photos: [...(((prev as any).photos || []) as string[]), ...uploaded]
     }));
   };
 
   const handlePhotoDelete = (idx: number) => {
     setForm(prev => ({
       ...prev,
-      item_photos: (prev.item_photos || []).filter((_, i) => i !== idx)
+      photos: (((prev as any).photos || []) as string[]).filter((_, i) => i !== idx)
     }));
   };
 
@@ -132,13 +137,13 @@ export function TransactionRequestForm({ sellerId }: TransactionRequestFormProps
   const validateForm = (): string[] => {
     const errors: string[] = [];
     if (!form.item_title || !form.item_title.trim()) errors.push("Item title is required");
-    if (!form.item_category) errors.push("Category is required");
-    if (!form.item_description || !form.item_description.trim()) errors.push("Description is required");
-    if (!form.item_photos || !form.item_photos.length) errors.push("At least one photo is required");
-    if (!form.item_price || !form.item_price.trim()) errors.push("Price is required");
-    if (!form.item_currency) errors.push("Currency is required");
-    if (!form.item_delivery_options) errors.push("Delivery options are required");
-    if (!form.item_insurance || !form.item_insurance.trim()) errors.push("Insurance is required");
+    if (!form.category) errors.push("Category is required");
+    if (!form.description || !form.description.trim()) errors.push("Description is required");
+    if (!form.photos || !form.photos.length) errors.push("At least one photo is required");
+    if (!form.price || !form.price.trim()) errors.push("Price is required");
+    if (!form.currency) errors.push("Currency is required");
+    if (!form.delivery_method) errors.push("Delivery method is required");
+    if (!form.insurance || !form.insurance.trim()) errors.push("Insurance is required");
     if (!form.buyer_email || !form.buyer_email.trim()) errors.push("Buyer email is required");
     // Optional: email format validation
     if (form.buyer_email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.buyer_email)) errors.push("Valid buyer email required");
@@ -148,7 +153,7 @@ export function TransactionRequestForm({ sellerId }: TransactionRequestFormProps
 
   const handleAnnotationSave = async (dataUrl: string) => {
     if (annotateIdx === null) return;
-    setForm((prev: TransactionFormData) => ({
+    setForm((prev: Partial<TransactionFormData>) => ({
       ...prev,
       photos: prev?.photos?.map((photo: string, i: number) => i === annotateIdx ? dataUrl : photo) || []
     }));
@@ -167,20 +172,24 @@ export function TransactionRequestForm({ sellerId }: TransactionRequestFormProps
     }
     setSaving(true);
     try {
-      const { data, error } = await supabase.from("transactions").insert({
-        ...form,
-        status: "pending",
-        draft: !sendInvitation
-      });
+      const { data, error } = await supabase
+        .from("transactions")
+        .insert({
+          ...form,
+          status: "pending",
+          draft: !sendInvitation
+        })
+        .select("id")
+        .single();
       if (error) throw error;
 
-      if (sendInvitation && data?.[0]?.id) {
+      if (sendInvitation && data?.id) {
         const notificationPromises = [
           fetch("/api/notify", {
             method: "POST",
             body: JSON.stringify({
               user_id: form.buyer_email,
-              transaction_id: data[0]?.id,
+              transaction_id: data?.id,
               type: "email",
               message: `You have been invited to a transaction: ${form.item_title}`
             }),
@@ -190,7 +199,7 @@ export function TransactionRequestForm({ sellerId }: TransactionRequestFormProps
             method: "POST",
             body: JSON.stringify({
               user_id: form.buyer_phone,
-              transaction_id: data[0]?.id,
+              transaction_id: data?.id,
               type: "sms",
               message: `You have been invited to a transaction: ${form.item_title}`
             }),
@@ -200,7 +209,7 @@ export function TransactionRequestForm({ sellerId }: TransactionRequestFormProps
             method: "POST",
             body: JSON.stringify({
               user_id: form.buyer_email,
-              transaction_id: data[0]?.id,
+              transaction_id: data?.id,
               type: "in-app",
               message: `You have been invited to a transaction: ${form.item_title}`
             }),
@@ -326,12 +335,13 @@ export function TransactionRequestForm({ sellerId }: TransactionRequestFormProps
                 onChange={handleChange}
               />
             </div>
-          </div>
-        </CardContent>
-      </Card>
-    </TabsContent>
-  </Tabs>
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
   </>
 );
+
+}
 
 export default TransactionRequestForm;
