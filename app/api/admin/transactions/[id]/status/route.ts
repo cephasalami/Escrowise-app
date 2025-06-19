@@ -1,13 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/adminAuth";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 // PUT /api/admin/transactions/[id]/status
 // Body: { status: string, notes?: string }
 export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const auth = await requireAdmin();
   if (auth instanceof NextResponse) return auth;
   const { adminId } = auth;
@@ -19,14 +20,14 @@ export async function PUT(
   const { error } = await supabaseAdmin
     .from("escrow_transactions")
     .update({ status })
-    .eq("id", params.id);
+    .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   await supabaseAdmin.from("admin_actions").insert({
     admin_id: adminId,
     action_type: "transaction_status_update",
-    target_id: params.id,
+    target_id: id,
     target_type: "transaction",
     details: { status, notes }
   });
