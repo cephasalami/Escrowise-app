@@ -1,11 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { requireAdmin } from '@/lib/middleware/auth';
 
 export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const auth = await requireAdmin();
   if (auth instanceof NextResponse) return auth;
 
@@ -18,7 +19,7 @@ export async function PUT(
       ...templateData,
       updated_by: user.id
     })
-    .eq('id', params.id)
+    .eq('id', id)
     .select()
     .single();
 
