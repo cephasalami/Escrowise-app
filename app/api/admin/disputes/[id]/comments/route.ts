@@ -4,7 +4,7 @@ import { requireAdmin } from '@/lib/auth';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await requireAdmin();
   if (auth instanceof NextResponse) return auth;
@@ -16,7 +16,7 @@ export async function POST(
   const { data: comment, error } = await supabaseAdmin
     .from('dispute_comments')
     .insert({
-      dispute_id: params.id,
+      dispute_id: (await params).id,
       author_id: user.id,
       content,
       is_admin_only
@@ -39,7 +39,7 @@ export async function POST(
       evidence:dispute_evidence(*),
       comments:dispute_comments(*, author:profiles(*))
     `)
-    .eq('id', params.id)
+    .eq('id', (await params).id)
     .single();
 
   return NextResponse.json(dispute, { status: 201 });
