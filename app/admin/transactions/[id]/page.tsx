@@ -6,13 +6,14 @@ export const metadata: Metadata = {
 };
 
 interface TransactionPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function TransactionPage({ params }: TransactionPageProps) {
+export default async function TransactionPage({ params }: TransactionPageProps) {
+  const { id } = await params;
   return (
     <div className="container mx-auto py-8 px-4">
-      <TransactionDetails transactionId={params.id} />
+      <TransactionDetails transactionId={id} />
     </div>
   );
 }
