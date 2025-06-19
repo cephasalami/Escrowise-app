@@ -1,11 +1,15 @@
+import { Metadata } from 'next';
 import TransactionDetails from "@/components/admin/TransactionDetails";
 
-interface PageProps {
+export const metadata: Metadata = {
+  title: 'Transaction Details',
+};
+
+interface TransactionPageProps {
   params: { id: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export default async function TransactionPage({ params }: PageProps) {
+export default function TransactionPage({ params }: TransactionPageProps) {
   return (
     <div className="container mx-auto py-8 px-4">
       <TransactionDetails transactionId={params.id} />
