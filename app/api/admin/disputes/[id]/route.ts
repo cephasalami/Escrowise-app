@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { requireAdmin } from '@/lib/auth';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAdmin();
   if (auth instanceof NextResponse) return auth;
 
@@ -23,7 +23,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         author:profiles(*)
       )
     `)
-    .eq('id', params.id)
+    .eq('id', (await params).id)
     .single();
 
   if (error) {
@@ -33,7 +33,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   return NextResponse.json(dispute, { status: 200 });
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAdmin();
   if (auth instanceof NextResponse) return auth;
 
@@ -47,7 +47,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       admin_id,
       resolved_at: status === 'resolved' ? new Date().toISOString() : null
     })
-    .eq('id', params.id)
+    .eq('id', (await params).id)
     .select();
 
   if (error) {
