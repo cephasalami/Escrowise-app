@@ -1,9 +1,10 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 
 import { TrendingUp, Users, ShieldAlert, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
+import { supabase } from "@/src/supabaseClient"
 import { AnimatedCounter } from "@/components/animations/AnimatedCounter"
 
 interface StatCardProps {
@@ -47,31 +48,58 @@ const StatCard = ({ title, value, icon, trend, className, children }: StatCardPr
 }
 
 export default function DashboardStats() {
+  const [stats, setStats] = React.useState<{ [key: string]: number } | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const load = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const res = await fetch("/api/admin/overview", {
+        headers: { "x-admin-id": user.id },
+      });
+      const json = await res.json();
+      setStats(json);
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  if (loading || !stats) {
+    return (
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Loading..."
+          value={<AnimatedCounter value={0} />}
+          icon={<TrendingUp className="h-4 w-4 text-gray-400" />}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <StatCard
-        title="Total Transactions"
-        value={<AnimatedCounter value={1243} />}
+        title="Pending Escrows"
+        value={<AnimatedCounter value={stats.pendingEscrows} />}
         icon={<TrendingUp className="h-4 w-4 text-orange-600" />}
-        trend={{ value: 12, isPositive: true }}
       />
       <StatCard
-        title="Active Users"
-        value={<AnimatedCounter value={528} />}
+        title="Awaiting Verification"
+        value={<AnimatedCounter value={stats.awaitingVerification} />}
         icon={<Users className="h-4 w-4 text-blue-600" />}
-        trend={{ value: 8, isPositive: true }}
       />
       <StatCard
-        title="Open Disputes"
-        value={<AnimatedCounter value={15} />}
+        title="Completed This Week"
+        value={<AnimatedCounter value={stats.completedWeek} />}
         icon={<ShieldAlert className="h-4 w-4 text-red-600" />}
-        trend={{ value: 2, isPositive: false }}
       />
       <StatCard
-        title="Total Revenue"
-        value={`$${(53249).toLocaleString()}`}
+        title="Revenue (Mo.)"
+        value={`$${stats.revenueMonth.toLocaleString()}`}
         icon={<DollarSign className="h-4 w-4 text-green-600" />}
-        trend={{ value: 15, isPositive: true }}
       />
     </div>
   )

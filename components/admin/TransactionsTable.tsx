@@ -1,110 +1,54 @@
 "use client"
 
-import { useState } from "react"
-import { ChevronLeft, ChevronRight, MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react"
+import { useState, useEffect } from "react";
+import { supabase } from "@/src/supabaseClient"
+import { ChevronLeft, ChevronRight, MoreHorizontal, Eye, Edit, Trash2, Search, Download, FileText } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
 
 export default function TransactionsTable() {
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedRows, setSelectedRows] = useState<string[]>([])
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const transactions = [
-    {
-      id: "TX-2023-04-25-001",
-      buyer: "John Smith",
-      seller: "Alice Johnson",
-      amount: "$2,500.00",
-      status: "Completed",
-      date: "2023-04-25",
-      type: "Domain Purchase",
-    },
-    {
-      id: "TX-2023-04-24-002",
-      buyer: "Robert Brown",
-      seller: "Emma Davis",
-      amount: "$1,800.00",
-      status: "In Progress",
-      date: "2023-04-24",
-      type: "Service Contract",
-    },
-    {
-      id: "TX-2023-04-23-003",
-      buyer: "Michael Wilson",
-      seller: "Olivia Martinez",
-      amount: "$3,200.00",
-      status: "Pending",
-      date: "2023-04-23",
-      type: "Product Sale",
-    },
-    {
-      id: "TX-2023-04-22-004",
-      buyer: "William Taylor",
-      seller: "Sophia Anderson",
-      amount: "$950.00",
-      status: "Completed",
-      date: "2023-04-22",
-      type: "Digital Asset",
-    },
-    {
-      id: "TX-2023-04-21-005",
-      buyer: "James Thomas",
-      seller: "Isabella Jackson",
-      amount: "$1,500.00",
-      status: "Disputed",
-      date: "2023-04-21",
-      type: "Consulting Fee",
-    },
-    {
-      id: "TX-2023-04-20-006",
-      buyer: "David White",
-      seller: "Ava Harris",
-      amount: "$4,800.00",
-      status: "Completed",
-      date: "2023-04-20",
-      type: "Software License",
-    },
-    {
-      id: "TX-2023-04-19-007",
-      buyer: "Christopher Garcia",
-      seller: "Mia Lewis",
-      amount: "$2,100.00",
-      status: "Pending",
-      date: "2023-04-19",
-      type: "Marketing Campaign",
-    },
-    {
-      id: "TX-2023-04-18-008",
-      buyer: "Daniel Lee",
-      seller: "Chloe Walker",
-      amount: "$750.00",
-      status: "In Progress",
-      date: "2023-04-18",
-      type: "Design Services",
-    },
-    {
-      id: "TX-2023-04-17-009",
-      buyer: "Andrew Hall",
-      seller: "Abigail Green",
-      amount: "$3,900.00",
-      status: "Completed",
-      date: "2023-04-17",
-      type: "Real Estate Sale",
-    },
-    {
-      id: "TX-2023-04-16-010",
-      buyer: "Joseph Baker",
-      seller: "Emily Nelson",
-      amount: "$1,200.00",
-      status: "Disputed",
-      date: "2023-04-16",
-      type: "Travel Booking",
-    },
-  ]
+  const ITEMS_PER_PAGE = 10;
+
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const url = new URL('/api/admin/transactions', window.location.origin);
+      if (statusFilter) url.searchParams.append('status', statusFilter);
+      if (searchQuery) url.searchParams.append('search', searchQuery);
+      url.searchParams.append('page', currentPage.toString());
+      url.searchParams.append('limit', ITEMS_PER_PAGE.toString());
+
+      const res = await fetch(url.toString(), {
+        headers: { "x-admin-id": user.id },
+      });
+      
+      if (res.ok) {
+        const { data, total } = await res.json();
+        setTransactions(data);
+        setTotalCount(total);
+      }
+      setIsLoading(false);
+    };
+
+    load();
+  }, [statusFilter, searchQuery, currentPage]);
 
   // Handle select all checkbox
   const handleSelectAll = () => {
@@ -142,8 +86,99 @@ export default function TransactionsTable() {
     )
   }
 
+  const handleExport = async (format: 'csv' | 'json') => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    try {
+      const url = new URL('/api/admin/transactions/export', window.location.origin);
+      if (statusFilter) url.searchParams.append('status', statusFilter);
+      if (searchQuery) url.searchParams.append('search', searchQuery);
+      url.searchParams.append('format', format);
+
+      const res = await fetch(url.toString(), {
+        headers: { "x-admin-id": user.id },
+      });
+      
+      if (!res.ok) throw new Error('Export failed');
+      
+      const blob = await res.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `transactions-${new Date().toISOString()}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Export error:', error);
+    }
+  };
+
   return (
     <Card>
+      <div className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="relative w-full md:w-64">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+          <Input
+            placeholder="Search transactions..."
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Select
+            value={statusFilter || ""}
+            onValueChange={(value) => {
+              setStatusFilter(value || null);
+              setCurrentPage(1);
+            }}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Statuses</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="in_progress">In Progress</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="disputed">Disputed</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              setStatusFilter(null);
+              setSearchQuery("");
+              setCurrentPage(1);
+            }}
+          >
+            Reset
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Download className="h-4 w-4" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleExport('csv')}>
+                <FileText className="h-4 w-4 mr-2" />
+                CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('json')}>
+                <FileText className="h-4 w-4 mr-2" />
+                JSON
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -214,30 +249,24 @@ export default function TransactionsTable() {
 
       <div className="flex items-center justify-between space-x-2 py-4 px-4">
         <div className="text-sm text-gray-500">
-          {selectedRows.length > 0 ? (
-            <span>
-              {selectedRows.length} of {transactions.length} row(s) selected.
-            </span>
-          ) : (
-            <span>Showing {transactions.length} transactions</span>
-          )}
+          Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of {totalCount} transactions
         </div>
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
             size="icon"
-            disabled={currentPage === 1}
+            disabled={currentPage === 1 || isLoading}
             onClick={() => setCurrentPage(currentPage - 1)}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" className="px-3 py-2 h-8">
+          <Button variant="outline" className="px-3 py-2 h-8" disabled>
             {currentPage}
           </Button>
           <Button
             variant="outline"
             size="icon"
-            disabled={transactions.length <= 10}
+            disabled={currentPage * ITEMS_PER_PAGE >= totalCount || isLoading}
             onClick={() => setCurrentPage(currentPage + 1)}
           >
             <ChevronRight className="h-4 w-4" />
@@ -247,4 +276,3 @@ export default function TransactionsTable() {
     </Card>
   )
 }
-

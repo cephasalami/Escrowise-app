@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import DashboardStats from "@/components/admin/DashboardStats"
 import RecentTransactions from "@/components/admin/RecentTransactions"
 import RecentUsers from "@/components/admin/RecentUsers"
+import QuickActions from "@/components/admin/QuickActions"
 import RecentActivity from "@/components/admin/RecentActivity"
 import { supabase } from "@/src/supabaseClient";
 import { useRouter } from "next/navigation";
@@ -48,9 +49,10 @@ export default function AdminDashboard() {
 
       <DashboardStats />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <RecentTransactions />
         <RecentUsers />
+        <QuickActions />
       </div>
 
       <RecentActivity />

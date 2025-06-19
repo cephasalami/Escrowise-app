@@ -3,10 +3,73 @@
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChevronRight, Check, X } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import { supabase } from "@/src/supabaseClient"
 
-const users = [
-  {
+export default function RecentUsers() {
+  const [users, setUsers] = useState<any[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const res = await fetch("/api/admin/users?limit=5", {
+        headers: { "x-admin-id": user.id },
+      });
+      const json = await res.json();
+      setUsers(json);
+    };
+
+    load();
+
+    const channel = supabase
+      .channel("admin-users")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "user_profiles" },
+        (payload) => {
+          setUsers((prev) => {
+            const idx = prev.findIndex((u) => u.id === payload.new.id);
+            let updated = [...prev];
+            if (idx !== -1) {
+              updated[idx] = { ...updated[idx], ...payload.new };
+            } else {
+              updated = [payload.new, ...updated];
+            }
+            return updated.slice(0, 5);
+          });
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  if (!users.length) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg font-bold">Recent Users</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm text-gray-500">No users yet.</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // helper to derive verified boolean
+  const displayUsers = users.map((u) => ({
+    id: u.id,
+    name: u.full_name ?? "-",
+    email: "", // you can fetch from auth.users if needed
+    role: u.role,
+    verified: u.verification_status === "verified",
+  }));
+
     id: "U-1234",
     name: "Emma Wilson",
     email: "emma@example.com",
@@ -65,7 +128,7 @@ export default function RecentUsers() {
             <div>Status</div>
           </div>
 
-          {users.map((user) => (
+          {displayUsers.map((user) => (
             <Link
               href={`/admin/users/${user.id}`}
               key={user.id}
