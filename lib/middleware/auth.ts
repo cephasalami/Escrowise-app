@@ -1,66 +1,37 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '../supabaseAdmin';
-import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
-import { notifyAdminLogin } from '../loginNotifications';
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { Database } from '@/types/database.types';
 
-// Configure rate limiting (5 requests per 10 seconds)
-const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(5, '10 s'),
-});
 
-// Admin IP whitelist
-const ADMIN_IP_WHITELIST = process.env.ADMIN_IP_WHITELIST?.split(',') || [];
 
-export const requireAdmin = async (req: Request) => {
-  // Check IP whitelist
-  const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip');
-  if (ADMIN_IP_WHITELIST.length > 0 && !ADMIN_IP_WHITELIST.includes(ip)) {
-    return NextResponse.json(
-      { error: 'Access restricted' },
-      { status: 403 }
-    );
-  }
-
-  // Apply rate limiting
-  const { success } = await ratelimit.limit(ip || 'anonymous');
-  if (!success) {
-    return NextResponse.json(
-      { error: 'Too many requests' },
-      { status: 429 }
-    );
-  }
-
-  // Existing auth checks
-  const { data: { user } } = await supabaseAdmin.auth.getUser();
+export const requireAdmin = async () => {
+  const supabase = createServerComponentClient<Database>({ cookies });
   
-  if (!user) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
+  const { data, error } = await supabase.auth.getSession();
+  
+  if (error || !data?.session) {
+    return new NextResponse(
+      JSON.stringify({ error: 'Not authenticated' }),
+      { status: 401, headers: { 'Content-Type': 'application/json' } }
     );
   }
+  
+  const { session } = data;
 
   // Check if user has admin role
-  const { data: adminRole } = await supabaseAdmin
-    .from('admin_user_roles')
-    .select('role_id')
-    .eq('user_id', user.id)
+  const { data: userData, error: userError } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', session.user.id)
     .single();
 
-  if (!adminRole) {
-    return NextResponse.json(
-      { error: 'Forbidden - Admin access required' },
-      { status: 403 }
+  if (userError || !userData || userData.role !== 'admin') {
+    return new NextResponse(
+      JSON.stringify({ error: 'Not authorized' }),
+      { status: 403, headers: { 'Content-Type': 'application/json' } }
     );
   }
 
-  await notifyAdminLogin(
-    user.id,
-    req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '',
-    req.headers.get('user-agent') || ''
-  );
-
-  return user;
+  return { user: session.user };
 };

@@ -93,7 +93,7 @@ export default function TransactionDetails({ transactionId }: { transactionId: s
       
       // Refresh data
       const updated = await res.json();
-      setTransaction(prev => ({
+      setTransaction((prev: any) => ({
         ...prev,
         status: newStatus
       }));

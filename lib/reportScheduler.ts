@@ -1,20 +1,34 @@
-import { supabaseAdmin } from './supabaseAdmin';
-import { sendEmail } from './email';
-import { generateReport } from './reports';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { sendEmail } from '@/lib/email';
+import { generateReport } from '@/lib/reports';
 
-export const runScheduledReports = async () => {
+interface ScheduledReport {
+  id: string;
+  report_type: string;
+  parameters: Record<string, any>;
+  recipients: string | string[];
+  frequency: 'daily' | 'weekly' | 'monthly';
+  is_active: boolean;
+  last_run_at: string | null;
+  next_run_at: string;
+}
+
+export const runScheduledReports = async (reportsToRun?: ScheduledReport[]) => {
   const now = new Date();
   
-  // Get reports due to run
-  const { data: reports, error } = await supabaseAdmin
-    .from('scheduled_reports')
-    .select('*')
-    .lte('next_run_at', now.toISOString())
-    .eq('is_active', true);
+  // If no reports provided, fetch due reports
+  if (!reportsToRun || reportsToRun.length === 0) {
+    const { data, error } = await supabaseAdmin
+      .from('scheduled_reports')
+      .select('*')
+      .lte('next_run_at', now.toISOString())
+      .eq('is_active', true);
 
-  if (error || !reports) return;
+    if (error || !data) return;
+    reportsToRun = data;
+  }
 
-  for (const report of reports) {
+  for (const report of reportsToRun) {
     try {
       // Generate the report
       const reportData = await generateReport(

@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { headers } from "next/headers";
 
-
 export async function GET() {
-  const adminId = headers().get("x-admin-id");
+  const headersList = await headers();
+  const adminId = headersList.get("x-admin-id");
   if (!adminId) {
     return NextResponse.json({ error: "Missing admin id" }, { status: 401 });
   }

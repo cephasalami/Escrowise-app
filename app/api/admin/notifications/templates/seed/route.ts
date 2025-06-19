@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { requireAdmin } from '@/lib/auth';
+import { requireAdmin } from '@/lib/middleware/auth';
 
 const DEFAULT_TEMPLATES = [
   {
