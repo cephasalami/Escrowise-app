@@ -7,8 +7,27 @@ import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import { supabase } from "@/src/supabaseClient"
 
+interface UserProfile {
+  id: string;
+  full_name: string | null;
+  role: string;
+  verification_status: string;
+}
+
+interface Payload {
+  new: UserProfile;
+}
+
+interface DisplayUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  verified: boolean;
+}
+
 export default function RecentUsers() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<UserProfile[]>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -19,7 +38,7 @@ export default function RecentUsers() {
       const res = await fetch("/api/admin/users?limit=5", {
         headers: { "x-admin-id": user.id },
       });
-      const json = await res.json();
+      const json = await res.json() as UserProfile[];
       setUsers(json);
     };
 
@@ -28,9 +47,9 @@ export default function RecentUsers() {
     const channel = supabase
       .channel("admin-users")
       .on(
-        "postgres_changes",
+        "postgres_changes" as any, // Type assertion to fix event type error
         { event: "*", schema: "public", table: "user_profiles" },
-        (payload) => {
+        (payload: { new: UserProfile }) => {
           setUsers((prev) => {
             const idx = prev.findIndex((u) => u.id === payload.new.id);
             let updated = [...prev];
@@ -61,57 +80,15 @@ export default function RecentUsers() {
     );
   }
 
-  // helper to derive verified boolean
-  const displayUsers = users.map((u) => ({
+  // Map to display format
+  const displayUsers = users.map((u): DisplayUser => ({
     id: u.id,
     name: u.full_name ?? "-",
-    email: "", // you can fetch from auth.users if needed
+    email: "",
     role: u.role,
     verified: u.verification_status === "verified",
   }));
 
-    id: "U-1234",
-    name: "Emma Wilson",
-    email: "emma@example.com",
-    role: "buyer",
-    verified: true,
-    joined: "Apr 2, 2023",
-  },
-  {
-    id: "U-1235",
-    name: "James Smith",
-    email: "james@example.com",
-    role: "seller",
-    verified: true,
-    joined: "Apr 1, 2023",
-  },
-  {
-    id: "U-1236",
-    name: "Olivia Johnson",
-    email: "olivia@example.com",
-    role: "buyer",
-    verified: false,
-    joined: "Mar 30, 2023",
-  },
-  {
-    id: "U-1237",
-    name: "William Brown",
-    email: "william@example.com",
-    role: "seller",
-    verified: true,
-    joined: "Mar 28, 2023",
-  },
-  {
-    id: "U-1238",
-    name: "Sophia Davis",
-    email: "sophia@example.com",
-    role: "buyer",
-    verified: false,
-    joined: "Mar 25, 2023",
-  },
-]
-
-export default function RecentUsers() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -167,6 +144,5 @@ export default function RecentUsers() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-
