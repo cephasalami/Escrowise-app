@@ -1,11 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { requireAdmin } from '@/lib/auth';
 
 export async function POST(
-  req: Request,
-  { params }: { params: { roleId: string, permissionId: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ roleId: string; permissionId: string }> }
 ) {
+  const { roleId, permissionId } = await params;
   const auth = await requireAdmin();
   if (auth instanceof NextResponse) return auth;
 
@@ -15,8 +16,8 @@ export async function POST(
   const { data: existing, error: checkError } = await supabaseAdmin
     .from('role_permissions')
     .select('*')
-    .eq('role_id', params.roleId)
-    .eq('permission_id', params.permissionId)
+    .eq('role_id', roleId)
+    .eq('permission_id', permissionId)
     .maybeSingle();
 
   if (checkError) {
@@ -31,8 +32,8 @@ export async function POST(
   const { error } = await supabaseAdmin
     .from('role_permissions')
     .insert({
-      role_id: params.roleId,
-      permission_id: params.permissionId
+      role_id: roleId,
+      permission_id: permissionId
     });
 
   if (error) {
@@ -43,24 +44,25 @@ export async function POST(
   const { data: role } = await supabaseAdmin
     .from('admin_roles')
     .select('*, permissions:role_permissions(permission:permission_types(*))')
-    .eq('id', params.roleId)
+    .eq('id', roleId)
     .single();
 
   return NextResponse.json(role, { status: 201 });
 }
 
 export async function DELETE(
-  req: Request,
-  { params }: { params: { roleId: string, permissionId: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ roleId: string; permissionId: string }> }
 ) {
+  const { roleId, permissionId } = await params;
   const auth = await requireAdmin();
   if (auth instanceof NextResponse) return auth;
 
   const { error } = await supabaseAdmin
     .from('role_permissions')
     .delete()
-    .eq('role_id', params.roleId)
-    .eq('permission_id', params.permissionId);
+    .eq('role_id', roleId)
+    .eq('permission_id', permissionId);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -70,7 +72,7 @@ export async function DELETE(
   const { data: role } = await supabaseAdmin
     .from('admin_roles')
     .select('*, permissions:role_permissions(permission:permission_types(*))')
-    .eq('id', params.roleId)
+    .eq('id', roleId)
     .single();
 
   return NextResponse.json(role, { status: 200 });
