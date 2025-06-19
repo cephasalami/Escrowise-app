@@ -1,12 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { requireAdmin } from '@/lib/auth';
 import { logAdminChange } from '@/lib/auditLogger';
 
 export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const auth = await requireAdmin();
   if (auth instanceof NextResponse) return auth;
 
@@ -17,13 +18,13 @@ export async function PUT(
   const { data: currentUser } = await supabaseAdmin
     .from('admin_user_roles')
     .select('*')
-    .eq('user_id', params.id)
+    .eq('user_id', id)
     .single();
 
   const { data, error } = await supabaseAdmin
     .from('admin_user_roles')
     .upsert({
-      user_id: params.id,
+      user_id: id,
       role_id,
       assigned_by: user.id
     })
@@ -37,7 +38,7 @@ export async function PUT(
   // Log the change
   await logAdminChange(
     currentUser ? 'update' : 'create',
-    params.id,
+    id,
     currentUser || null,
     data
   );
@@ -46,9 +47,10 @@ export async function PUT(
 }
 
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const auth = await requireAdmin();
   if (auth instanceof NextResponse) return auth;
 
@@ -56,13 +58,13 @@ export async function DELETE(
   const { data: currentUser } = await supabaseAdmin
     .from('admin_user_roles')
     .select('*')
-    .eq('user_id', params.id)
+    .eq('user_id', id)
     .single();
 
   const { error } = await supabaseAdmin
     .from('admin_user_roles')
     .delete()
-    .eq('user_id', params.id);
+    .eq('user_id', id);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -71,7 +73,7 @@ export async function DELETE(
   // Log the deletion
   await logAdminChange(
     'delete',
-    params.id,
+    id,
     currentUser,
     null
   );
