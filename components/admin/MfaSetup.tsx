@@ -17,6 +17,8 @@ export default function MfaSetup() {
   const [status, setStatus] = useState<'idle' | 'setting-up' | 'verifying' | 'success' | 'error'>('idle');
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [challengeId, setChallengeId] = useState('');
+  const [factorId, setFactorId] = useState('');
 
   const setupMfa = async () => {
     setStatus('setting-up');
@@ -31,6 +33,15 @@ export default function MfaSetup() {
       
       setQrCode(data.totp.qr_code);
       setSecret(data.totp.secret);
+      setFactorId(data.id);
+      
+      const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
+        factorId: data.id
+      });
+      
+      if (challengeError) throw challengeError;
+      
+      setChallengeId(challengeData.id);
       
       // Generate backup codes
       const codes = Array.from({length: 10}, () => 
@@ -48,8 +59,9 @@ export default function MfaSetup() {
       
       setBackupCodes(codes);
       setStatus('verifying');
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      setError(errorMessage);
       setStatus('error');
     }
   };
@@ -60,15 +72,17 @@ export default function MfaSetup() {
     
     try {
       const { error: verifyError } = await supabase.auth.mfa.verify({
-        factorId: 'totp',
+        factorId,
+        challengeId,
         code: verificationCode
       });
       
       if (verifyError) throw verifyError;
       
       setStatus('success');
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to verify code';
+      setError(errorMessage);
       setStatus('error');
     }
   };

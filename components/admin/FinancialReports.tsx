@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DatePicker } from '@/components/ui/date-picker';
 
 export default function FinancialReports() {
-  const [dateRange, setDateRange] = useState({
+  const [dateRange, setDateRange] = useState<{ start: Date | null; end: Date | null }>({
     start: new Date(new Date().setMonth(new Date().getMonth() - 1)),
     end: new Date()
   });
@@ -30,8 +30,8 @@ export default function FinancialReports() {
         },
         body: JSON.stringify({
           type,
-          start_date: dateRange.start.toISOString(),
-          end_date: dateRange.end.toISOString()
+          start_date: dateRange.start ? dateRange.start.toISOString() : null,
+          end_date: dateRange.end ? dateRange.end.toISOString() : null
         })
       });
 
@@ -56,12 +56,21 @@ export default function FinancialReports() {
           <div className="w-full md:w-1/3 space-y-4">
             <div>
               <h3 className="text-sm font-medium mb-2">Date Range</h3>
-              <DatePicker 
-                mode="range"
-                selected={dateRange}
-                onSelect={setDateRange}
-                className="w-full"
-              />
+              <div className="flex gap-2">
+                <DatePicker
+                  value={dateRange.start}
+                  onChange={date => setDateRange(dr => ({ ...dr, start: date }))}
+                  maxDate={dateRange.end || undefined}
+                  disabled={loading}
+                />
+                <span className="mx-1">to</span>
+                <DatePicker
+                  value={dateRange.end}
+                  onChange={date => setDateRange(dr => ({ ...dr, end: date }))}
+                  minDate={dateRange.start || undefined}
+                  disabled={loading}
+                />
+              </div>
             </div>
 
             <Tabs defaultValue="standard" className="w-full">

@@ -8,6 +8,9 @@ export async function POST(req: Request) {
 
   const { type, start_date, end_date } = await req.json();
   const { data: { user } } = await supabaseAdmin.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'User not found' }, { status: 401 });
+  }
 
   try {
     let query;
@@ -96,7 +99,7 @@ export async function POST(req: Request) {
       start_date,
       end_date,
       generated_at: new Date().toISOString(),
-      generated_by: user.id,
+      generated_by: user.id, // We've already checked that user is not null
       data
     }, { status: 200 });
 

@@ -62,7 +62,7 @@ export default function AuditCharts() {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => exportToCSV(formatChartData(data)[0], 'audit-actions')}
+                onClick={() => exportToCSV([formatChartData(data)[0]], 'audit-actions')}
               >
                 <Download className="h-4 w-4 mr-2" /> CSV
               </Button>
@@ -78,7 +78,7 @@ export default function AuditCharts() {
         </CardHeader>
         <CardContent className="h-80">
           <ResponsiveContainer id="auditActionsChart" width="100%" height="100%">
-            <BarChart data={formatChartData(data)[0]}>
+            <BarChart data={[formatChartData(data)[0]]}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
@@ -103,7 +103,7 @@ export default function AuditCharts() {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => exportToCSV(formatChartData(data)[1], 'audit-entities')}
+                onClick={() => exportToCSV([formatChartData(data)[1]], 'audit-entities')}
               >
                 <Download className="h-4 w-4 mr-2" /> CSV
               </Button>
@@ -119,7 +119,7 @@ export default function AuditCharts() {
         </CardHeader>
         <CardContent className="h-80">
           <ResponsiveContainer id="auditEntitiesChart" width="100%" height="100%">
-            <BarChart data={formatChartData(data)[1]}>
+            <BarChart data={[formatChartData(data)[1]]}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />

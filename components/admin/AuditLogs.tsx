@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { Select } from '@/components/ui/select';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { UserSearch } from '@/components/ui/user-search';
 import { ButtonGroup } from '@/components/ui/button-group';
 import { AuditTimeline } from '@/components/ui/audit-timeline';
@@ -136,12 +136,12 @@ export default function AuditLogs() {
               
               <div>
                 <label className="text-sm font-medium mb-1 block">Affected User</label>
-                <UserSearch onSelect={setAffectedUserFilter} />
+                <UserSearch onSelect={user => setAffectedUserFilter(user.id)} />
               </div>
               
               <div>
                 <label className="text-sm font-medium mb-1 block">Time Range</label>
-                <Select onValueChange={setTimeRangeFilter} defaultValue="7d">
+                <Select onValueChange={v => setTimeRangeFilter(v as 'all' | '24h' | '7d' | '30d')} defaultValue="7d">
                   <SelectTrigger>
                     <SelectValue placeholder="Select time range" />
                   </SelectTrigger>
@@ -177,7 +177,7 @@ export default function AuditLogs() {
             </div>
 
             {viewMode === 'timeline' ? (
-              <AuditTimeline data={logs} />
+              <AuditTimeline events={logs} />
             ) : (
               <Table>
                 <TableHeader>

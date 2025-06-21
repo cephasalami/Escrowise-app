@@ -91,8 +91,8 @@ export default function PermissionManager() {
   };
 
   // Group permissions by category
-  const permissionGroups = permissions.reduce((groups, permission) => {
-    const group = groups.find(g => g.category === permission.category);
+  const permissionGroups = permissions.reduce((groups: { category: string; permissions: any[] }[], permission) => {
+    const group = groups.find((g: { category: string }) => g.category === permission.category);
     if (group) {
       group.permissions.push(permission);
     } else {

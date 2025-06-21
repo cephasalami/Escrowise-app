@@ -13,6 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 export default function DisputeView({ disputeId }: { disputeId: string }) {
   const [dispute, setDispute] = useState<any>(null);
@@ -143,13 +145,13 @@ export default function DisputeView({ disputeId }: { disputeId: string }) {
                   </Badge>
                 )}
                 {dispute.status === 'under_review' && (
-                  <Badge variant="warning">
+                  <Badge variant="outline">
                     <Clock className="h-4 w-4 mr-2" />
                     Under Review
                   </Badge>
                 )}
                 {dispute.status === 'resolved' && (
-                  <Badge variant="success">
+                  <Badge variant="default">
                     <CheckCircle2 className="h-4 w-4 mr-2" />
                     Resolved
                   </Badge>

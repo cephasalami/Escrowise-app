@@ -188,7 +188,7 @@ export default function NotificationTemplates() {
                 className="min-h-[200px]"
               />
               <p className="text-sm text-muted-foreground mt-2">
-                Use {{variable}} syntax for dynamic content
+                Use {'{{variable}}'} syntax for dynamic content
               </p>
             </div>
 

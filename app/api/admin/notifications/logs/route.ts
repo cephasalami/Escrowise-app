@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { requireAdmin } from '@/lib/auth';
 
-export async function GET() {
+export async function GET(req: Request) {
   const auth = await requireAdmin();
   if (auth instanceof NextResponse) return auth;
 

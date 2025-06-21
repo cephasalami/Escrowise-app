@@ -6,8 +6,9 @@ import { requireAdmin } from "@/lib/adminAuth";
 // Body: { status: 'approved' | 'rejected', notes?: string }
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   // Admin auth
   const authResult = await requireAdmin();
   if (authResult instanceof NextResponse) return authResult;
@@ -18,7 +19,7 @@ export async function POST(
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
-  const verificationId = params.id;
+  const verificationId = id;
 
   // Determine verification type
   const { data: verification, error } = await supabaseAdmin

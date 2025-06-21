@@ -22,6 +22,9 @@ export async function PUT(req: Request) {
   if (auth instanceof NextResponse) return auth;
 
   const { data: { user } } = await supabaseAdmin.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'User not found' }, { status: 401 });
+  }
   const { key, value } = await req.json();
 
   const { data, error } = await supabaseAdmin
@@ -29,7 +32,7 @@ export async function PUT(req: Request) {
     .upsert({
       key,
       value,
-      updated_by: user.id
+      updated_by: user.id // We've already checked that user is not null
     })
     .select();
 

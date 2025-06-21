@@ -1,6 +1,6 @@
 import { supabaseAdmin } from './supabaseAdmin';
 import { sendEmail } from './email';
-import { auditLogger } from './auditLogger';
+import { logAction } from './auditLogger';
 
 export const notifyAdminLogin = async (userId: string, ipAddress: string, userAgent: string) => {
   // Get user details
@@ -47,14 +47,11 @@ export const notifyAdminLogin = async (userId: string, ipAddress: string, userAg
   });
 
   // Log the notification
-  await auditLogger.logAction({
-    action: 'admin_login_notification',
-    entity_type: 'user',
-    entity_id: userId,
-    details: {
-      ip_address: ipAddress,
-      user_agent: userAgent,
-      notified_at: new Date().toISOString()
-    }
-  });
+  await logAction(
+    'admin_login_notification', // action
+    'user',                    // entityType
+    userId,                    // entityId
+    null,                      // oldValue
+    { ip_address: ipAddress, user_agent: userAgent } // newValue
+  );
 };

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { requireAdmin } from '@/lib/middleware/auth';
+import { requireAdmin } from '@/lib/auth'; // Fixed import path
 
 export async function PATCH(
   req: NextRequest,
@@ -11,13 +11,16 @@ export async function PATCH(
   if (auth instanceof NextResponse) return auth;
 
   const { data: { user } } = await supabaseAdmin.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'User not found' }, { status: 401 });
+  }
   const { is_active } = await req.json();
 
   const { data, error } = await supabaseAdmin
     .from('notification_templates')
     .update({
       is_active,
-      updated_by: user.id
+      updated_by: user.id // We've already checked that user is not null
     })
     .eq('id', id)
     .select()

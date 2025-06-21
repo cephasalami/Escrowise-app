@@ -5,14 +5,15 @@ import { supabase } from '@/src/supabaseClient';
 import { FileText, BarChart2, Users, AlertTriangle, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { DatePicker } from '@/components/ui/date-picker';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function AdvancedReports() {
-  const [dateRange, setDateRange] = useState({
-    start: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-    end: new Date()
-  });
+  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
+    new Date(new Date().setMonth(new Date().getMonth() - 1)),
+    new Date()
+  ]);
   const [loading, setLoading] = useState(false);
   const [reportData, setReportData] = useState<any>(null);
 
@@ -31,8 +32,8 @@ export default function AdvancedReports() {
         body: JSON.stringify({
           reportType: type,
           filters: {
-            startDate: dateRange.start.toISOString(),
-            endDate: dateRange.end.toISOString()
+            startDate: dateRange[0]?.toISOString(),
+            endDate: dateRange[1]?.toISOString()
           }
         })
       });
@@ -58,10 +59,11 @@ export default function AdvancedReports() {
           <div className="w-full md:w-1/3 space-y-4">
             <div>
               <h3 className="text-sm font-medium mb-2">Date Range</h3>
-              <DatePicker 
-                mode="range"
-                selected={dateRange}
-                onSelect={setDateRange}
+              <DatePicker
+                selectsRange
+                startDate={dateRange[0]}
+                endDate={dateRange[1]}
+                onChange={(update) => setDateRange(update as [Date | null, Date | null])}
                 className="w-full"
               />
             </div>

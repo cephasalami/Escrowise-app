@@ -3,7 +3,11 @@ import { requireAdmin } from "@/lib/adminAuth";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 // PATCH /api/admin/verifications/[id] { action: 'approve' | 'reject' }
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
   const auth = await requireAdmin();
   if (auth instanceof NextResponse) return auth;
 
@@ -18,8 +22,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const { error } = await supabaseAdmin
     .from("verification_queue")
     .update({ status, admin_id: auth.adminId, updated_at: new Date().toISOString() })
-    .eq("id", params.id);
+    .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ id: params.id, status });
+  return NextResponse.json({ id, status });
 }

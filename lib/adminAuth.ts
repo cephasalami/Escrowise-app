@@ -7,7 +7,8 @@ import { NextResponse } from "next/server";
  * Returns the admin's UUID if valid, otherwise returns a NextResponse error.
  */
 export async function requireAdmin(): Promise<{ adminId: string } | NextResponse> {
-  const adminId = headers().get("x-admin-id");
+  const headersList = await headers();
+  const adminId = headersList.get("x-admin-id");
   if (!adminId) {
     return NextResponse.json({ error: "Missing admin id header" }, { status: 401 });
   }

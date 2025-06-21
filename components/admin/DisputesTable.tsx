@@ -55,9 +55,9 @@ export default function DisputesTable() {
       case 'open':
         return <Badge variant="destructive">Open</Badge>;
       case 'under_review':
-        return <Badge variant="warning">Under Review</Badge>;
+        return <Badge variant="outline">Under Review</Badge>;
       case 'resolved':
-        return <Badge variant="success">Resolved</Badge>;
+        return <Badge variant="default">Resolved</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }

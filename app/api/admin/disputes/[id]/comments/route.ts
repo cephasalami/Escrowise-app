@@ -10,7 +10,14 @@ export async function POST(
   if (auth instanceof NextResponse) return auth;
 
   const { content, is_admin_only } = await req.json();
-  const { data: { user } } = await supabaseAdmin.auth.getUser();
+  const {
+    data: { user }
+  } = await supabaseAdmin.auth.getUser();
+
+  // Ensure we have a valid authenticated user
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   
   // Add comment
   const { data: comment, error } = await supabaseAdmin

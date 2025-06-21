@@ -12,6 +12,9 @@ export async function PUT(
   if (auth instanceof NextResponse) return auth;
 
   const { data: { user } } = await supabaseAdmin.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'User not found' }, { status: 401 });
+  }
   const { name, description } = await req.json();
 
   // Get current role data for audit log
@@ -26,7 +29,7 @@ export async function PUT(
     .update({
       name,
       description,
-      updated_by: user.id
+      updated_by: user.id // We've already checked that user is not null
     })
     .eq('id', roleId)
     .select()

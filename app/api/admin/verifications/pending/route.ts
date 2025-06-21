@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 // GET /api/admin/verifications/pending
 // Returns { identity: [...], payment: [...] }
 export async function GET() {
   // Ensure caller is admin: this example expects client to include X-Admin-Id header.
-  const adminId = headers().get("x-admin-id");
+  const headersList = await headers();
+  const adminId = headersList.get("x-admin-id");
   if (!adminId) {
     return NextResponse.json({ error: "Missing admin id" }, { status: 401 });
   }

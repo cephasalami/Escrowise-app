@@ -34,7 +34,7 @@ const DEFAULT_ROLES = [
   }
 ];
 
-export async function POST() {
+export async function POST(req: Request) {
   const auth = await requireAdmin();
   if (auth instanceof NextResponse) return auth;
 

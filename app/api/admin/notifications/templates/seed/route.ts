@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { requireAdmin } from '@/lib/middleware/auth';
+import { requireAdmin } from '@/lib/auth'; // Fixed import path
 
 const DEFAULT_TEMPLATES = [
   {
@@ -44,18 +44,20 @@ export async function POST() {
   if (auth instanceof NextResponse) return auth;
 
   const { data: { user } } = await supabaseAdmin.auth.getUser();
-
-  // Check if templates already exist
-  const { data: existing, error: checkError } = await supabaseAdmin
-    .from('notification_templates')
-    .select('*')
-    .limit(1);
-
-  if (checkError) {
-    return NextResponse.json({ error: checkError.message }, { status: 500 });
+  if (!user) {
+    return NextResponse.json({ error: 'User not found' }, { status: 401 });
   }
 
-  if (existing && existing.length > 0) {
+  // Check if templates already exist
+  const { count, error: countError } = await supabaseAdmin
+    .from('notification_templates')
+    .select('*', { count: 'exact', head: true });
+
+  if (countError) {
+    return NextResponse.json({ error: countError.message }, { status: 500 });
+  }
+
+  if (count && count > 0) {
     return NextResponse.json(
       { error: 'Templates already seeded' }, 
       { status: 400 }
@@ -67,8 +69,8 @@ export async function POST() {
     .from('notification_templates')
     .insert(DEFAULT_TEMPLATES.map(t => ({
       ...t,
-      created_by: user.id,
-      updated_by: user.id
+      created_by: user.id, // We've already checked that user is not null
+      updated_by: user.id // We've already checked that user is not null
     })))
     .select();
 

@@ -18,13 +18,21 @@ export default function FinancialDashboard() {
       if (!user) return;
 
       // Get total platform balances
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('escrow_balances')
-        .select('SUM(held_balance) as total_held, SUM(available_balance) as total_available');
+        .select('held_balance, available_balance');
 
-      if (data) {
-        setTotalHeld(Number(data[0].total_held) || 0);
-        setTotalAvailable(Number(data[0].total_available) || 0);
+      if (error) {
+        setTotalHeld(0);
+        setTotalAvailable(0);
+      } else if (data && data.length > 0) {
+        const totalHeld = data.reduce((sum, row) => sum + (row.held_balance || 0), 0);
+        const totalAvailable = data.reduce((sum, row) => sum + (row.available_balance || 0), 0);
+        setTotalHeld(totalHeld);
+        setTotalAvailable(totalAvailable);
+      } else {
+        setTotalHeld(0);
+        setTotalAvailable(0);
       }
       setLoading(false);
     };
