@@ -2,16 +2,31 @@
 
 import { useState } from "react"
 import { MoreHorizontal, Eye, Edit, Check, X } from "lucide-react"
+import { UserDetailsDrawer } from "@/components/admin/UserDetailsDrawer"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
-// Mock data
-const users = [
+
+import { useEffect } from "react"
+import { supabase } from "@/src/supabaseClient"
+
+interface UserRow {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string | null;
+  verified: boolean;
+  joined: string;
+  transactions: number;
+}
+
+// Fallback placeholder while loading
+const initialUsers: UserRow[] = [
   {
     id: "U-1234",
     name: "Emma Wilson",
@@ -112,7 +127,7 @@ const users = [
     joined: "Mar 12, 2023",
     transactions: 14,
   },
-]
+];
 
 const StatusBadge = ({ status }: { status: string }) => {
   const statusStyles = {
@@ -132,8 +147,41 @@ const StatusBadge = ({ status }: { status: string }) => {
 }
 
 export function UsersTable() {
+  const [users, setUsers] = useState<UserRow[]>(initialUsers);
+  const [loading, setLoading] = useState<boolean>(true);
   const [selectedRows, setSelectedRows] = useState<string[]>([])
-  const [viewUser, setViewUser] = useState<(typeof users)[0] | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  
+
+  // Load users from Supabase
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      // Fetch profiles with basic info
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email, role, status, verification_status, created_at')
+        .order('created_at', { ascending: false });
+      if (!error && data) {
+        const mapped: UserRow[] = data.map((p: any) => ({
+          id: p.id,
+          name: [p.first_name, p.last_name].filter(Boolean).join(' ') || p.email,
+          email: p.email,
+          role: p.role,
+          status: p.status ?? 'active',
+          verified: p.verification_status === 'approved' || p.verified === true,
+          joined: new Date(p.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
+          transactions: 0,
+        }));
+        setUsers(mapped);
+      }
+      setLoading(false);
+    };
+    load();
+  }, []);
 
   // Handle select all checkbox
   const handleSelectAll = () => {
@@ -178,7 +226,14 @@ export function UsersTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
+              {loading ? (
+              <TableRow>
+                <TableCell colSpan={10} className="text-center py-8">
+                  Loading...
+                </TableCell>
+              </TableRow>
+            ) : (
+              users.map((user) => (
                 <TableRow key={user.id} className="group hover:bg-gray-50">
                   <TableCell>
                     <Checkbox
@@ -201,7 +256,7 @@ export function UsersTable() {
                   </TableCell>
                   <TableCell className="capitalize">{user.role}</TableCell>
                   <TableCell>
-                    <StatusBadge status={user.status} />
+                    <StatusBadge status={user.status ?? ""} />
                   </TableCell>
                   <TableCell>
                     {user.verified ? (
@@ -225,7 +280,10 @@ export function UsersTable() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setViewUser(user)}>
+                        <DropdownMenuItem onClick={() => {
+                          setSelectedUserId(user.id);
+                          setDrawerOpen(true);
+                        }}>
                           <Eye className="mr-2 h-4 w-4" />
                           <span>View details</span>
                         </DropdownMenuItem>
@@ -243,14 +301,26 @@ export function UsersTable() {
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>
-              ))}
+              ))
+            )}
             </TableBody>
           </Table>
         </div>
       </Card>
-
-      {/* View user details dialog */}
-      <Dialog open={!!viewUser} onOpenChange={() => setViewUser(null)}>
+      <UserDetailsDrawer
+        userId={selectedUserId}
+        open={drawerOpen}
+        onOpenChange={(o) => {
+          if (!o) setSelectedUserId(null);
+          setDrawerOpen(o);
+        }}
+        onProfileUpdated={() => {
+          if (!selectedUserId) return;
+          setUsers((prev) => prev.map((u) => (u.id === selectedUserId ? { ...u, verified: true } : u)));
+        }}
+      />
+      
+      {/*
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>User Details</DialogTitle>
@@ -347,8 +417,7 @@ export function UsersTable() {
             </div>
           )}
         </DialogContent>
-      </Dialog>
+      */}
     </>
   )
 }
-

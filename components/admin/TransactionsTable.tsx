@@ -16,7 +16,7 @@ export default function TransactionsTable() {
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedRows, setSelectedRows] = useState<string[]>([])
   const [transactions, setTransactions] = useState<any[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [totalCount, setTotalCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -30,7 +30,7 @@ export default function TransactionsTable() {
       if (!user) return;
 
       const url = new URL('/api/admin/transactions', window.location.origin);
-      if (statusFilter) url.searchParams.append('status', statusFilter);
+      if (statusFilter && statusFilter !== 'all') url.searchParams.append('status', statusFilter);
       if (searchQuery) url.searchParams.append('search', searchQuery);
       url.searchParams.append('page', currentPage.toString());
       url.searchParams.append('limit', ITEMS_PER_PAGE.toString());
@@ -92,7 +92,7 @@ export default function TransactionsTable() {
 
     try {
       const url = new URL('/api/admin/transactions/export', window.location.origin);
-      if (statusFilter) url.searchParams.append('status', statusFilter);
+      if (statusFilter && statusFilter !== 'all') url.searchParams.append('status', statusFilter);
       if (searchQuery) url.searchParams.append('search', searchQuery);
       url.searchParams.append('format', format);
 
@@ -132,17 +132,14 @@ export default function TransactionsTable() {
         </div>
         <div className="flex items-center gap-2">
           <Select
-            value={statusFilter || ""}
-            onValueChange={(value) => {
-              setStatusFilter(value || null);
-              setCurrentPage(1);
-            }}
+            value={statusFilter}
+            onValueChange={(v) => setStatusFilter(v)}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Statuses</SelectItem>
+              <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="in_progress">In Progress</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
@@ -152,7 +149,7 @@ export default function TransactionsTable() {
           <Button 
             variant="outline" 
             onClick={() => {
-              setStatusFilter(null);
+              setStatusFilter('all');
               setSearchQuery("");
               setCurrentPage(1);
             }}

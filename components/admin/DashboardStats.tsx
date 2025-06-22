@@ -83,22 +83,22 @@ export default function DashboardStats() {
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <StatCard
         title="Pending Escrows"
-        value={<AnimatedCounter value={stats.pendingEscrows} />}
+        value={<AnimatedCounter value={stats.pendingEscrows ?? 0} />}
         icon={<TrendingUp className="h-4 w-4 text-orange-600" />}
       />
       <StatCard
         title="Awaiting Verification"
-        value={<AnimatedCounter value={stats.awaitingVerification} />}
+        value={<AnimatedCounter value={stats.awaitingVerification ?? 0} />}
         icon={<Users className="h-4 w-4 text-blue-600" />}
       />
       <StatCard
         title="Completed This Week"
-        value={<AnimatedCounter value={stats.completedWeek} />}
+        value={<AnimatedCounter value={stats.completedWeek ?? 0} />}
         icon={<ShieldAlert className="h-4 w-4 text-red-600" />}
       />
       <StatCard
         title="Revenue (Mo.)"
-        value={`$${stats.revenueMonth.toLocaleString()}`}
+        value={`$${(stats.revenueMonth ?? 0).toLocaleString()}`}
         icon={<DollarSign className="h-4 w-4 text-green-600" />}
       />
     </div>

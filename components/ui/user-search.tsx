@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from "@/src/supabaseClient";
 
 interface UserProfile {
   id: string;
@@ -20,7 +20,7 @@ export const UserSearch: React.FC<UserSearchProps> = ({ onSelect, placeholder })
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const supabase = createClientComponentClient();
+;
 
   useEffect(() => {
     if (query.length < 2) {

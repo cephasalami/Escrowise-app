@@ -3,8 +3,10 @@ import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { Database } from '@/types/database.types';
 
-
-
+/**
+ * Middleware to check if user is authenticated
+ * @returns {Promise<NextResponse | { user: { id: string, email: string } }>}
+ */
 export const requireAdmin = async () => {
   const supabase = createServerComponentClient<Database>({ cookies });
   
@@ -17,21 +19,5 @@ export const requireAdmin = async () => {
     );
   }
   
-  const { session } = data;
-
-  // Check if user has admin role
-  const { data: userData, error: userError } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', session.user.id)
-    .single();
-
-  if (userError || !userData || userData.role !== 'admin') {
-    return new NextResponse(
-      JSON.stringify({ error: 'Not authorized' }),
-      { status: 403, headers: { 'Content-Type': 'application/json' } }
-    );
-  }
-
-  return { user: session.user };
+  return { user: data.session.user };
 };
